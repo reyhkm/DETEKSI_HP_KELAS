@@ -17,7 +17,7 @@ ROBOFLOW_API_KEY = "lx9lvRB6j6sOgQ2u9sZr"
 # Hapus blok try-except untuk st.secrets
 
 API_URL = "https://detect.roboflow.com"
-MODEL_ID = "-cellphone-detection/1"
+MODEL_ID = "yolov5_phone_model/2"
 
 # --- Inisialisasi Klien Roboflow ---
 @st.cache_resource
