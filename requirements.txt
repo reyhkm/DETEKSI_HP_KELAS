@@ -1,0 +1,6 @@
+streamlit
+inference-sdk
+pillow
+numpy
+pandas # Jika Anda menggunakan DataFrame
+# Tambahkan library lain jika ada
