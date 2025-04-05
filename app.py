@@ -5,19 +5,16 @@ import numpy as np
 import io
 import os
 import pandas as pd
-import base64 # <<< Import modul base64
+import base64
 
 st.set_page_config(page_title="Deteksi Handphone", layout="wide")
 
 # --- Konfigurasi Aplikasi & API Key ---
-try:
-    ROBOFLOW_API_KEY = st.secrets["ROBOFLOW_API_KEY"]
-except (KeyError, FileNotFoundError) as e:
-    st.error(f"Error memuat Roboflow API Key dari Streamlit Secrets: {e}")
-    st.warning("Pastikan Anda sudah membuat file `.streamlit/secrets.toml` dan menambahkan baris:")
-    st.code("ROBOFLOW_API_KEY = \"your_actual_api_key\"")
-    st.info("Aplikasi tidak dapat melanjutkan tanpa API Key.")
-    st.stop()
+# WARNING: API Key hardcoded seperti permintaan karena dianggap publik.
+# JANGAN lakukan ini dengan API Key privat!
+ROBOFLOW_API_KEY = "lx9lvRB6j6sOgQ2u9sZr"
+
+# Hapus blok try-except untuk st.secrets
 
 API_URL = "https://detect.roboflow.com"
 MODEL_ID = "classroom-cell-phone-detection/18"
@@ -26,10 +23,14 @@ MODEL_ID = "classroom-cell-phone-detection/18"
 @st.cache_resource
 def get_roboflow_client():
     """Menginisialisasi dan mengembalikan klien Roboflow."""
+    # Pastikan ROBOFLOW_API_KEY sudah terdefinisi sebelum fungsi ini dipanggil
+    if not ROBOFLOW_API_KEY:
+         st.error("API Key Roboflow belum didefinisikan dalam kode.")
+         return None
     try:
         client = InferenceHTTPClient(
             api_url=API_URL,
-            api_key=ROBOFLOW_API_KEY
+            api_key=ROBOFLOW_API_KEY # Menggunakan key yang sudah di-hardcode
         )
         return client
     except Exception as e:
@@ -39,9 +40,7 @@ def get_roboflow_client():
 client = get_roboflow_client()
 
 # --- Fungsi untuk Menggambar Bounding Box ---
-# (Fungsi draw_boxes tetap sama)
 def draw_boxes(image_bytes, predictions):
-    # ... (kode draw_boxes tidak berubah) ...
     try:
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
         draw = ImageDraw.Draw(image)
@@ -56,10 +55,10 @@ def draw_boxes(image_bytes, predictions):
         text_color = (255, 255, 255)
         text_background = (0, 100, 255)
 
-        if not predictions: # Cek jika list kosong setelah filtering
+        if not predictions:
             return image
 
-        for pred in predictions: # Iterasi pada prediksi yang SUDAH difilter
+        for pred in predictions:
             x_center = pred.get('x')
             y_center = pred.get('y')
             width = pred.get('width')
@@ -118,8 +117,8 @@ st.title("📱 Deteksi Handphone di Kelas (Roboflow Model)")
 st.write(f"Menggunakan model: `{MODEL_ID}`")
 st.markdown("""
     Unggah gambar kelas, dan AI akan mencoba mendeteksi keberadaan handphone.
-    *(Pastikan API Key Roboflow Anda sudah tersimpan di `.streamlit/secrets.toml`)*
-""")
+    *(API Key disematkan langsung dalam kode untuk demo ini)*
+""") # Ubah markdown sedikit
 
 if client is None:
     st.error("Inisialisasi Klien Roboflow gagal. Aplikasi tidak dapat berjalan.")
@@ -130,7 +129,7 @@ uploaded_file = st.file_uploader("Pilih file gambar...", type=["jpg", "jpeg", "p
 confidence_threshold = st.slider("Minimum Tingkat Keyakinan (Confidence)", 0.0, 1.0, 0.4, 0.05)
 
 if uploaded_file is not None:
-    image_data_bytes = uploaded_file.getvalue() # <<< Simpan bytes asli untuk menggambar nanti
+    image_data_bytes = uploaded_file.getvalue()
 
     col1, col2 = st.columns(2)
     with col1:
@@ -144,14 +143,8 @@ if uploaded_file is not None:
         with col2:
             with st.spinner('Mengonversi gambar dan melakukan deteksi...'):
                 try:
-                    # *** PERUBAHAN DI SINI ***
-                    # Konversi bytes ke string base64
                     base64_image_string = base64.b64encode(image_data_bytes).decode('utf-8')
-
-                    # Kirim string base64 ke infer()
                     result = client.infer(base64_image_string, model_id=MODEL_ID)
-                    # *** AKHIR PERUBAHAN ***
-
 
                     all_predictions = []
                     filtered_predictions = []
@@ -171,7 +164,6 @@ if uploaded_file is not None:
                                 if pred['confidence'] >= confidence_threshold:
                                     filtered_predictions.append(pred)
 
-                        # Gunakan bytes asli (image_data_bytes) untuk menggambar
                         image_with_boxes = draw_boxes(image_data_bytes, filtered_predictions)
 
                         st.subheader("Hasil Deteksi")
@@ -203,7 +195,6 @@ if uploaded_file is not None:
                             st.write("Tidak ada prediksi lolos filter untuk ditampilkan.")
 
                 except Exception as e:
-                    # Perbarui pesan error untuk mencakup kemungkinan masalah format input
                     st.error(f"Terjadi kesalahan saat inferensi atau pemrosesan hasil: {e}")
                     if "Unknown type of input" in str(e):
                          st.error("API tidak mengenali format input gambar. Pastikan SDK mendukung pengiriman base64 atau periksa format lain yang didukung.")
