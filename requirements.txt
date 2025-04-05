@@ -3,5 +3,4 @@ inference-sdk
 pillow
 numpy
 pandas
-opencv-python-headless # <<< TAMBAHKAN INI
-base64 # (base64 adalah modul bawaan, tidak perlu di requirements.txt)
+opencv-python-headless
