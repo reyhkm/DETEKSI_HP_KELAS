@@ -17,7 +17,7 @@ ROBOFLOW_API_KEY = "lx9lvRB6j6sOgQ2u9sZr"
 # Hapus blok try-except untuk st.secrets
 
 API_URL = "https://detect.roboflow.com"
-MODEL_ID = "yolov5_phone_model/2"
+MODEL_ID = "classroom-cell-phone-detection/18"
 
 # --- Inisialisasi Klien Roboflow ---
 @st.cache_resource
@@ -117,6 +117,7 @@ st.title("📱 Deteksi Handphone di Kelas (Roboflow Model)")
 st.write(f"Menggunakan model: `{MODEL_ID}`")
 st.markdown("""
     Unggah gambar kelas, dan AI akan mencoba mendeteksi keberadaan handphone.
+    *(API Key disematkan langsung dalam kode untuk demo ini)*
 """) # Ubah markdown sedikit
 
 if client is None:
