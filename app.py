@@ -117,7 +117,6 @@ st.title("📱 Deteksi Handphone di Kelas (Roboflow Model)")
 st.write(f"Menggunakan model: `{MODEL_ID}`")
 st.markdown("""
     Unggah gambar kelas, dan AI akan mencoba mendeteksi keberadaan handphone.
-    *(API Key disematkan langsung dalam kode untuk demo ini)*
 """) # Ubah markdown sedikit
 
 if client is None:
