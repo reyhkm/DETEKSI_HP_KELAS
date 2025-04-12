@@ -7,30 +7,29 @@ import os
 import pandas as pd
 import base64
 
-st.set_page_config(page_title="Deteksi Handphone", layout="wide")
+st.set_page_config(page_title="Deteksi Mobile Phones", layout="wide") # Judul halaman diubah sedikit
 
 # --- Konfigurasi Aplikasi & API Key ---
 # WARNING: API Key hardcoded seperti permintaan karena dianggap publik.
 # JANGAN lakukan ini dengan API Key privat!
-ROBOFLOW_API_KEY = "lx9lvRB6j6sOgQ2u9sZr"
+ROBOFLOW_API_KEY = "lx9lvRB6j6sOgQ2u9sZr" # API Key tetap sama sesuai contoh
 
-# Hapus blok try-except untuk st.secrets
-
-API_URL = "https://detect.roboflow.com"
-MODEL_ID = "classroom-cell-phone-detection/18"
+# --- PERUBAHAN PENTING DI SINI ---
+API_URL = "https://serverless.roboflow.com" # <<< URL API BARU
+MODEL_ID = "mobilephones-ajdcy/1"         # <<< MODEL ID BARU
+# --- AKHIR PERUBAHAN PENTING ---
 
 # --- Inisialisasi Klien Roboflow ---
 @st.cache_resource
 def get_roboflow_client():
     """Menginisialisasi dan mengembalikan klien Roboflow."""
-    # Pastikan ROBOFLOW_API_KEY sudah terdefinisi sebelum fungsi ini dipanggil
     if not ROBOFLOW_API_KEY:
          st.error("API Key Roboflow belum didefinisikan dalam kode.")
          return None
     try:
         client = InferenceHTTPClient(
-            api_url=API_URL,
-            api_key=ROBOFLOW_API_KEY # Menggunakan key yang sudah di-hardcode
+            api_url=API_URL, # Menggunakan URL API yang sudah diperbarui
+            api_key=ROBOFLOW_API_KEY
         )
         return client
     except Exception as e:
@@ -40,6 +39,7 @@ def get_roboflow_client():
 client = get_roboflow_client()
 
 # --- Fungsi untuk Menggambar Bounding Box ---
+# (Fungsi draw_boxes tidak perlu diubah, sudah handle nama kelas dinamis)
 def draw_boxes(image_bytes, predictions):
     try:
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
@@ -64,6 +64,7 @@ def draw_boxes(image_bytes, predictions):
             width = pred.get('width')
             height = pred.get('height')
             confidence = pred.get('confidence')
+            # Ambil nama kelas apa adanya dari hasil, tangani jika tidak ada
             class_name = pred.get('class', 'Unknown')
 
             if None in [x_center, y_center, width, height, confidence]:
@@ -77,6 +78,7 @@ def draw_boxes(image_bytes, predictions):
 
             draw.rectangle([x1, y1, x2, y2], outline=box_color, width=3)
 
+            # Tampilkan nama kelas dan confidence
             label = f"{class_name}: {confidence:.1%}"
 
             try:
@@ -113,11 +115,12 @@ def draw_boxes(image_bytes, predictions):
 
 
 # --- Tampilan Utama Aplikasi Streamlit ---
-st.title("📱 Deteksi Handphone di Kelas (Roboflow Model)")
-st.write(f"Menggunakan model: `{MODEL_ID}`")
+st.title("📱 Deteksi Mobile Phones (Model Baru)") # Judul diubah
+st.write(f"Menggunakan model: `{MODEL_ID}`") # Otomatis pakai model ID baru
 st.markdown("""
-    Unggah gambar kelas, dan AI akan mencoba mendeteksi keberadaan handphone.
-""") # Ubah markdown sedikit
+    Unggah gambar, dan AI akan mencoba mendeteksi keberadaan handphone.
+    *(API Key disematkan langsung dalam kode untuk demo ini)*
+""")
 
 if client is None:
     st.error("Inisialisasi Klien Roboflow gagal. Aplikasi tidak dapat berjalan.")
@@ -125,7 +128,7 @@ if client is None:
 
 uploaded_file = st.file_uploader("Pilih file gambar...", type=["jpg", "jpeg", "png"])
 
-confidence_threshold = st.slider("Minimum Tingkat Keyakinan (Confidence)", 0.0, 1.0, 0.4, 0.05)
+confidence_threshold = st.slider("Minimum Tingkat Keyakinan (Confidence)", 0.0, 1.0, 0.5, 0.05) # Default confidence mungkin perlu disesuaikan
 
 if uploaded_file is not None:
     image_data_bytes = uploaded_file.getvalue()
@@ -143,11 +146,13 @@ if uploaded_file is not None:
             with st.spinner('Mengonversi gambar dan melakukan deteksi...'):
                 try:
                     base64_image_string = base64.b64encode(image_data_bytes).decode('utf-8')
+                    # Memanggil infer dengan model ID yang sudah diperbarui
                     result = client.infer(base64_image_string, model_id=MODEL_ID)
 
                     all_predictions = []
                     filtered_predictions = []
 
+                    # Logika filter dan tampilan hasil tetap sama
                     if isinstance(result, dict) and 'predictions' in result:
                         all_predictions = result['predictions']
                     elif isinstance(result, list):
@@ -171,7 +176,8 @@ if uploaded_file is not None:
                             st.image(image_with_boxes, caption='Tidak ada deteksi.', use_container_width=True)
                         else:
                             num_detections = len(filtered_predictions)
-                            obj_name = "objek (handphone)" if num_detections != 1 else "objek (handphone)"
+                            # Sesuaikan nama objek jika perlu, berdasarkan nama kelas baru
+                            obj_name = "objek (handphone)"
                             st.success(f"Terdeteksi {num_detections} {obj_name}.")
                             st.image(image_with_boxes, caption='Gambar dengan Bounding Box.', use_container_width=True)
 
@@ -205,5 +211,5 @@ if uploaded_file is not None:
 
 # --- Footer atau Informasi Tambahan ---
 st.markdown("---")
-st.markdown("Model dari [Roboflow Universe](https://universe.roboflow.com/)")
+st.markdown("Model dari [Roboflow](https://roboflow.com/)") # Link umum
 st.markdown("Dibuat dengan Streamlit & Roboflow Inference SDK.")
