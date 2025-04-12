@@ -15,7 +15,7 @@ st.set_page_config(page_title="Deteksi HP & Data ke Ubidots", layout="wide")
 # --- Konfigurasi Roboflow ---
 ROBOFLOW_API_KEY = "lx9lvRB6j6sOgQ2u9sZr"
 API_URL = "https://serverless.roboflow.com"
-MODEL_ID = "mobilephones-ajdcy/1"
+MODEL_ID = "mobile-8hpgp/3"
 
 # --- Konfigurasi Ubidots ---
 UBIDOTS_TOKEN = "BBUS-LVmlvNvVLuio2pqxZmPRrAvlGSoMyV" # <<< TOKEN UBIDOTS KAMU
