@@ -10,7 +10,7 @@ st.set_page_config(page_title="Dashboard Deteksi HP", layout="wide")
 
 # --- Konfigurasi Ubidots ---
 UBIDOTS_TOKEN = "BBUS-LVmlvNvVLuio2pqxZmPRrAvlGSoMyV"
-DEVICE_LABEL = "kamera-kelas"
+DEVICE_LABEL = "esp32-kelas-saya"
 UBIDOTS_BASE_URL = "https://industrial.api.ubidots.com/api/v1.6"
 
 # --- Variabel Label di Ubidots (SESUAIKAN DENGAN NAMA BARU) ---
