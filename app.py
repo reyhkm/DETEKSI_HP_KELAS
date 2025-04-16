@@ -19,7 +19,7 @@ MODEL_ID = "mobile-8hpgp/3"
 
 # --- Konfigurasi Ubidots ---
 UBIDOTS_TOKEN = "BBUS-LVmlvNvVLuio2pqxZmPRrAvlGSoMyV" # <<< TOKEN UBIDOTS KAMU
-DEVICE_LABEL = "esp32-kelas-saya"                     # <<< API Label Device Pilihanmu
+DEVICE_LABEL = "esp32-sic"                     # <<< API Label Device Pilihanmu
 UBIDOTS_BASE_URL = "https://industrial.api.ubidots.com/api/v1.6"
 
 # --- Variabel Label di Ubidots ---
