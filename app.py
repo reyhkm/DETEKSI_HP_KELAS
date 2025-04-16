@@ -1,14 +1,14 @@
 import streamlit as st
-from inference_sdk import InferenceHTTPClient # Roboflow
+from inference_sdk import InferenceHTTPClient 
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 import io
 import os
 import pandas as pd
 import base64
-import requests # Untuk mengirim data
-import json     # Untuk format data Ubidots
-import time     # Untuk timestamp status
+import requests 
+import json     
+import time    
 
 st.set_page_config(page_title="Deteksi HP & Data ke Ubidots", layout="wide")
 
@@ -18,19 +18,18 @@ API_URL = "https://serverless.roboflow.com"
 MODEL_ID = "mobile-8hpgp/3"
 
 # --- Konfigurasi Ubidots ---
-UBIDOTS_TOKEN = "BBUS-LVmlvNvVLuio2pqxZmPRrAvlGSoMyV" # <<< TOKEN UBIDOTS KAMU
-DEVICE_LABEL = "ESP32-SIC"                     # <<< API Label Device Pilihanmu
+UBIDOTS_TOKEN = "BBUS-LVmlvNvVLuio2pqxZmPRrAvlGSoMyV" 
+DEVICE_LABEL = "ESP32-SIC"
 UBIDOTS_BASE_URL = "https://industrial.api.ubidots.com/api/v1.6"
 
 # --- Variabel Label di Ubidots ---
-VAR_TRIGGER = "trigger-kirim"         # Variabel trigger (nilai 0 atau 1)
-VAR_AVG_CONFIDENCE = "confidence-rata-rata" # Variabel confidence rata-rata
-VAR_JUMLAH_HP = "jumlah-hp"           # <<< VARIABEL BARU untuk jumlah HP
+VAR_TRIGGER = "trigger-kirim" 
+VAR_AVG_CONFIDENCE = "confidence-rata-rata" 
+VAR_JUMLAH_HP = "jumlah-hp" 
 
 # --- Inisialisasi Klien Roboflow ---
 @st.cache_resource
 def get_roboflow_client():
-    # ... (fungsi get_roboflow_client tetap sama) ...
     if not ROBOFLOW_API_KEY: st.error("API Key Roboflow belum didefinisikan."); return None
     try: client = InferenceHTTPClient(api_url=API_URL, api_key=ROBOFLOW_API_KEY); return client
     except Exception as e: st.error(f"Gagal menginisialisasi klien Roboflow: {e}"); return None
@@ -41,7 +40,6 @@ client = get_roboflow_client()
 def set_ubidots_variable(device_label, variable_label, value):
     url = f"{UBIDOTS_BASE_URL}/devices/{device_label}"
     headers = {"X-Auth-Token": UBIDOTS_TOKEN, "Content-Type": "application/json"}
-    # Ubah sedikit: payload sekarang hanya untuk 1 variabel per panggilan
     payload = {variable_label: value}
     try:
         response = requests.post(url, headers=headers, data=json.dumps(payload), timeout=10)
@@ -49,13 +47,12 @@ def set_ubidots_variable(device_label, variable_label, value):
     except requests.exceptions.Timeout: st.warning(f"Timeout Ubidots ({variable_label})"); return False
     except requests.exceptions.RequestException as e:
         try: detail = response.json()
-        except: detail = response.text # noqa
+        except: detail = response.text 
         st.error(f"Error API Ubidots ({variable_label}): {e} - Detail: {detail}"); return False
     except Exception as e: st.error(f"Error Ubidots ({variable_label}): {e}"); return False
 
 # --- Fungsi untuk Menggambar Bounding Box (Tetap Sama) ---
 def draw_boxes(image_bytes, predictions):
-    # ... (kode draw_boxes tidak berubah, salin dari sebelumnya) ...
     try:
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
         draw = ImageDraw.Draw(image); font_size = max(15, int(image.width / 50))
@@ -78,12 +75,12 @@ def draw_boxes(image_bytes, predictions):
     except Exception as e: st.error(f"Error gambar box: {e}"); return Image.new('RGB',(200,100),color='grey')
 
 
-# ==============================================
-# --- Tampilan Utama Aplikasi Streamlit ---
-# ==============================================
+# =================
+# --- Streamlit ---
+# =================
 st.title("📱 Deteksi HP & Kirim Data ke Ubidots")
 
-# --- BAGIAN DETEKSI HANDPHONE ---
+# --- Deteksi Handphone ---
 st.header("🔍 Deteksi Handphone")
 st.write(f"Menggunakan model AI: `{MODEL_ID}`")
 
@@ -109,7 +106,6 @@ else:
             with col_img2:
                 with st.spinner('Melakukan deteksi dan mengirim data ke Ubidots...'):
                     try:
-                        # 1. Deteksi
                         base64_image_string = base64.b64encode(image_data_bytes).decode('utf-8')
                         result = client.infer(base64_image_string, model_id=MODEL_ID)
                         all_predictions = result.get('predictions', []) if isinstance(result, dict) else (result if isinstance(result, list) else None)
@@ -123,7 +119,6 @@ else:
                             st.error(f"Format hasil Roboflow tidak dikenali: {type(result)}")
                             st.json(result); filtered_predictions=None
 
-                        # Tampilkan Hasil Deteksi di Streamlit
                         st.subheader("Hasil Deteksi")
                         if filtered_predictions is None:
                              st.error("Tidak bisa memproses hasil deteksi.")
@@ -132,33 +127,25 @@ else:
                             image_with_boxes = draw_boxes(image_data_bytes, filtered_predictions)
                             st.warning(f"Tidak ada HP terdeteksi (conf > {confidence_threshold:.0%}).")
                             st.image(image_with_boxes, caption='Tidak ada deteksi.', use_container_width=True)
-                            # Kirim 0 ke Jumlah HP jika tidak terdeteksi
                             jumlah_hp_success = set_ubidots_variable(DEVICE_LABEL, VAR_JUMLAH_HP, 0)
                             st.session_state.last_status = f"Tidak ada HP terdeteksi ({time.strftime('%H:%M:%S')}). Jumlah HP (0) {'berhasil' if jumlah_hp_success else 'gagal'} dikirim."
-                        else: # ADA HP TERDETEKSI
+                        else: 
                             image_with_boxes = draw_boxes(image_data_bytes, filtered_predictions)
-                            num_detections = len(filtered_predictions) # <<< JUMLAH HP
+                            num_detections = len(filtered_predictions) 
                             st.success(f"Terdeteksi {num_detections} HP.")
                             st.image(image_with_boxes, caption='Gambar dengan Bounding Box.', use_container_width=True)
 
-                            # --- HITUNG & TAMPILKAN CONFIDENCE RATA-RATA ---
                             total_confidence = sum(pred.get('confidence', 0) for pred in filtered_predictions)
                             average_confidence = total_confidence / num_detections if num_detections > 0 else 0
                             st.metric("Confidence Rata-rata", f"{average_confidence:.1%}")
-                            # ---------------------------------------------
 
-                            # --- KIRIM DATA KE UBIDOTS ---
                             st.info(f"Mencoba mengirim data ke Ubidots...")
-                            # Kirim Trigger = 1
+
                             trigger_success = set_ubidots_variable(DEVICE_LABEL, VAR_TRIGGER, 1)
-                            # Kirim Confidence Rata-rata
                             confidence_to_send = round(average_confidence * 100, 1)
                             conf_success = set_ubidots_variable(DEVICE_LABEL, VAR_AVG_CONFIDENCE, confidence_to_send)
-                            # Kirim Jumlah HP
                             jumlah_hp_success = set_ubidots_variable(DEVICE_LABEL, VAR_JUMLAH_HP, num_detections) # <<< KIRIM JUMLAH
-                            # ---------------------------
 
-                            # --- UPDATE STATUS ---
                             msg = f"({time.strftime('%H:%M:%S')}) "
                             results_list = []
                             if trigger_success: results_list.append("Trig(1):OK")
@@ -175,10 +162,6 @@ else:
                             else:
                                 st.error("Sebagian atau semua data gagal dikirim ke Ubidots.")
                             st.session_state.last_status = msg
-                            # ---------------------
-
-                            # Tampilkan detail prediksi (opsional)
-                            # ... (kode detail prediksi bisa ditambahkan jika mau) ...
 
                     except Exception as e:
                         st.error(f"Terjadi kesalahan saat inferensi Roboflow: {e}")

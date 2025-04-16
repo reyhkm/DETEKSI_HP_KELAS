@@ -1,15 +1,12 @@
-code Thonny
-
-
 from machine import Pin, I2C, ADC
 import dht
 import time
-importx	 ssd1306
+importx	ssd1306
 import network
 import urequests
 import gc
 
-# ====== Konfigurasi WiFi dan Ubidots ======
+# ====== Konfigurasi WiFi dan Ubidots ====== 
 WIFI_SSID = "stephen"
 WIFI_PASSWORD = "siapanamamu"
 UBIDOTS_TOKEN = "BBUS-V0J3uZcao48EpkLTKdLN7AdI9ILglD"
@@ -34,7 +31,7 @@ def connect_wifi(timeout=10):
 
         print('✅ Terhubung ke WiFi:', wlan.ifconfig())
         print("⏳ Menunggu WiFi stabil...")
-        time.sleep(3)  # Delay ekstra agar WiFi stabil
+        time.sleep(3) 
     return True
 
 # ====== Inisialisasi perangkat ======
