@@ -2,7 +2,6 @@ import streamlit as st
 import requests
 import json
 import time
-# Tidak perlu import base64, PIL, io lagi
 
 st.set_page_config(page_title="Dashboard Deteksi HP (Status)", layout="wide")
 
@@ -11,14 +10,13 @@ UBIDOTS_TOKEN = "BBUS-LVmlvNvVLuio2pqxZmPRrAvlGSoMyV"
 DEVICE_LABEL = "kamera-kelas"
 UBIDOTS_BASE_URL = "https://industrial.api.ubidots.com/api/v1.6"
 
-# --- Variabel Label di Ubidots (HANYA YANG DIBACA) ---
+# --- Variabel Label di Ubidots ---
 VAR_TRIGGER = "trigger-kirim"
 VAR_AVG_CONFIDENCE = "confidence-rata-rata"
 VAR_JUMLAH_HP = "jumlah-hp"
-# VAR_GAMBAR_URL dihapus
 
 # --- Fungsi ambil data terakhir dari Ubidots ---
-@st.cache_data(ttl=3) # Cache 3 detik
+@st.cache_data(ttl=3)
 def get_ubidots_last_values(device_label, variable_labels_list):
     results = {}
     if not isinstance(variable_labels_list, list): variable_labels_list = [variable_labels_list]
@@ -31,17 +29,15 @@ def get_ubidots_last_values(device_label, variable_labels_list):
         except Exception as e: print(f"Gagal ambil '{variable_label}': {e}"); results[variable_label] = None
     return results
 
-# --- Fungsi decode Base64 DIHAPUS ---
-
 # ==============================================
 # --- Tampilan Utama Aplikasi Streamlit ---
 # ==============================================
-st.title("📊 Dashboard Status Deteksi Handphone")
-st.info("Dashboard ini menampilkan status terakhir yang dikirim oleh script detektor.")
+st.title("📊 Dashboard Status Deteksi Handphone (YOLOv8 Lokal)")
+st.info("Dashboard ini menampilkan status terakhir yang dikirim oleh script `detector.py` (YOLOv8).")
 
 st.button("🔄 Refresh Dashboard")
 
-# Ambil data terakhir dari Ubidots (TANPA variabel gambar)
+# Ambil data terakhir dari Ubidots
 variables_to_fetch = [VAR_TRIGGER, VAR_JUMLAH_HP, VAR_AVG_CONFIDENCE]
 latest_data = get_ubidots_last_values(DEVICE_LABEL, variables_to_fetch)
 
@@ -49,7 +45,6 @@ latest_data = get_ubidots_last_values(DEVICE_LABEL, variables_to_fetch)
 trigger_value = latest_data.get(VAR_TRIGGER, 0)
 jumlah_hp_value = latest_data.get(VAR_JUMLAH_HP, 0)
 confidence_value = latest_data.get(VAR_AVG_CONFIDENCE, 0)
-# gambar_url_value dihapus
 
 st.markdown("---")
 st.header("📈 Status Deteksi Terakhir")
@@ -61,15 +56,10 @@ with col3: confidence_display = float(confidence_value) if isinstance(confidence
 
 st.markdown("---")
 # --- Bagian Tampilkan Gambar DIHAPUS ---
-# st.header("📸 Snapshot Terakhir Saat Deteksi")
-# if trigger_value == 1 and ... :
-#     ...
-# else:
-#     st.info("Tidak ada HP terdeteksi pada status terakhir (Tidak ada snapshot).")
 
 # --- Footer ---
 st.markdown("---")
-st.markdown("Data via [Ubidots](https://ubidots.com/)")
+st.markdown("Data via [Ubidots](https://ubidots.com/) | Model: YOLOv8 Lokal")
 st.markdown("Dashboard dibuat dengan Streamlit")
 
 # --- Auto Refresh (Opsional) ---
