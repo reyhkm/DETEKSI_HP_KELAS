@@ -22,7 +22,7 @@ VAR_GERAKAN = "motion"              # <<< Variabel Gerakan BARU
 
 # --- Konfigurasi Flask API (Tetap Sama) ---
 # <<< GANTI 'your-username' DENGAN USERNAME PYTHONANYWHERE KAMU >>>
-FLASK_API_URL_GET = "http://your-username.pythonanywhere.com/get_latest_image_url"
+FLASK_API_URL_GET = "https://oryxn.pythonanywhere.com/get_latest_image_url"
 
 # --- Fungsi ambil data terakhir dari Ubidots ---
 @st.cache_data(ttl=5) # Cache 5 detik (sesuaikan jika perlu)
