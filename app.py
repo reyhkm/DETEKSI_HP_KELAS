@@ -2,19 +2,20 @@ import streamlit as st
 import requests
 import json
 import time
+# Tidak perlu import base64, PIL, io lagi
 
-st.set_page_config(page_title="Dashboard Deteksi HP (via Cloudinary)", layout="wide")
+st.set_page_config(page_title="Dashboard Deteksi HP (Status)", layout="wide")
 
 # --- Konfigurasi Ubidots ---
 UBIDOTS_TOKEN = "BBUS-LVmlvNvVLuio2pqxZmPRrAvlGSoMyV"
 DEVICE_LABEL = "kamera-kelas"
 UBIDOTS_BASE_URL = "https://industrial.api.ubidots.com/api/v1.6"
 
-# --- Variabel Label di Ubidots (Nama Benar) ---
+# --- Variabel Label di Ubidots (HANYA YANG DIBACA) ---
 VAR_TRIGGER = "trigger-kirim"
 VAR_AVG_CONFIDENCE = "confidence-rata-rata"
 VAR_JUMLAH_HP = "jumlah-hp"
-VAR_GAMBAR_URL = "gambar-terdeteksi" # Variabel untuk URL Cloudinary
+# VAR_GAMBAR_URL dihapus
 
 # --- Fungsi ambil data terakhir dari Ubidots ---
 @st.cache_data(ttl=3) # Cache 3 detik
@@ -30,23 +31,25 @@ def get_ubidots_last_values(device_label, variable_labels_list):
         except Exception as e: print(f"Gagal ambil '{variable_label}': {e}"); results[variable_label] = None
     return results
 
+# --- Fungsi decode Base64 DIHAPUS ---
+
 # ==============================================
 # --- Tampilan Utama Aplikasi Streamlit ---
 # ==============================================
-st.title("📊 Dashboard Deteksi Handphone (Status dari Detektor Lokal)")
-st.info("Dashboard ini menampilkan status terakhir yang dikirim oleh script `detector.py`.")
+st.title("📊 Dashboard Status Deteksi Handphone")
+st.info("Dashboard ini menampilkan status terakhir yang dikirim oleh script detektor.")
 
 st.button("🔄 Refresh Dashboard")
 
-# Ambil semua data terakhir dari Ubidots
-variables_to_fetch = [VAR_TRIGGER, VAR_JUMLAH_HP, VAR_AVG_CONFIDENCE, VAR_GAMBAR_URL]
+# Ambil data terakhir dari Ubidots (TANPA variabel gambar)
+variables_to_fetch = [VAR_TRIGGER, VAR_JUMLAH_HP, VAR_AVG_CONFIDENCE]
 latest_data = get_ubidots_last_values(DEVICE_LABEL, variables_to_fetch)
 
 # Ekstrak nilai
 trigger_value = latest_data.get(VAR_TRIGGER, 0)
 jumlah_hp_value = latest_data.get(VAR_JUMLAH_HP, 0)
 confidence_value = latest_data.get(VAR_AVG_CONFIDENCE, 0)
-gambar_url_value = latest_data.get(VAR_GAMBAR_URL, None)
+# gambar_url_value dihapus
 
 st.markdown("---")
 st.header("📈 Status Deteksi Terakhir")
@@ -57,18 +60,16 @@ with col2: jumlah_hp_display = int(jumlah_hp_value) if isinstance(jumlah_hp_valu
 with col3: confidence_display = float(confidence_value) if isinstance(confidence_value, (int, float)) else 0.0; st.metric("Confidence Rata-rata", f"{confidence_display:.1f}%")
 
 st.markdown("---")
-st.header("📸 Snapshot Terakhir Saat Deteksi (via Cloudinary)")
-
-if trigger_value == 1 and isinstance(gambar_url_value, str) and gambar_url_value.startswith("http"):
-    st.image(gambar_url_value, caption="Gambar terakhir saat HP terdeteksi (dari Cloudinary).", use_container_width=True)
-elif trigger_value == 1:
-    st.warning("HP terdeteksi, tapi URL gambar tidak valid atau tidak diterima dari Ubidots (variabel 'gambar-terdeteksi').")
-else:
-    st.info("Tidak ada HP terdeteksi pada status terakhir.")
+# --- Bagian Tampilkan Gambar DIHAPUS ---
+# st.header("📸 Snapshot Terakhir Saat Deteksi")
+# if trigger_value == 1 and ... :
+#     ...
+# else:
+#     st.info("Tidak ada HP terdeteksi pada status terakhir (Tidak ada snapshot).")
 
 # --- Footer ---
 st.markdown("---")
-st.markdown("Data via [Ubidots](https://ubidots.com/) | Gambar via [Cloudinary](https://cloudinary.com/)")
+st.markdown("Data via [Ubidots](https://ubidots.com/)")
 st.markdown("Dashboard dibuat dengan Streamlit")
 
 # --- Auto Refresh (Opsional) ---
