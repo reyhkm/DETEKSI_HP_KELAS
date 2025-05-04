@@ -7,7 +7,7 @@ st.set_page_config(page_title="Dashboard Kelas (Deteksi & Sensor)", layout="wide
 
 # --- Konfigurasi Ubidots ---
 UBIDOTS_TOKEN = "BBUS-LVmlvNvVLuio2pqxZmPRrAvlGSoMyV"
-DEVICE_LABEL = "kamera-kelas" # <<< Pastikan ini nama device yang benar
+DEVICE_LABEL = "esp32-sic" # <<< Pastikan ini nama device yang benar
 UBIDOTS_BASE_URL = "https://industrial.api.ubidots.com/api/v1.6"
 
 # --- Variabel Label di Ubidots (LENGKAPI SEMUA) ---
