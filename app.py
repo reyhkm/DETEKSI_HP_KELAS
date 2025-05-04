@@ -15,7 +15,7 @@ VAR_JUMLAH_HP = "jumlah-hp"
 
 # --- Konfigurasi Flask API ---
 # <<< GANTI 'your-username' DENGAN USERNAME PYTHONANYWHERE KAMU >>>
-FLASK_API_URL_GET = "http://your-username.pythonanywhere.com/get_latest_image_url"
+FLASK_API_URL_GET = "https://oryxn.pythonanywhere.com/get_latest_image_url"
 
 # --- Fungsi ambil data terakhir dari Ubidots ---
 @st.cache_data(ttl=3)
